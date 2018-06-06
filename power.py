@@ -64,24 +64,42 @@ class EnergyCompare(list):
 		for key, value in self.oldCosts.items():
 			ruleCost = 0
 			for rule in self:
-				if rule.override:
+				if rule.override and rule.apply(value) != 0:
 					ruleCost = rule.apply(value)
-				elif rule.apply(value) !=0:
+				elif rule.apply(value) != 0:
 					ruleCost += rule.apply(value)
 			newCosts.append(round(ruleCost, 2))
 		self.newCosts = newCosts
 		return newCosts
 
 	def prettyPrint(self):
+		print("{0:<16} {1:<16} {2:<16} {3:<16}".format("Old Yearly Cost", "New Yearly Cost", "Difference ($)", "Difference (%)"))
+		oldYearlyCost = sum(list(self.oldCosts.keys()))
+		newYearlyCost = sum(self.newCosts)
 		print(list(self.oldCosts.keys()))
 		print(self.newCosts)
+		differenceDollars = sum(self.newCosts) - sum(list(self.oldCosts.keys()))
+		differencePercent = ((newYearlyCost-oldYearlyCost)/((newYearlyCost+oldYearlyCost)/2))*100
+		print("${0:<15.2f} ${1:<15.2f} ${2:<15.2f} {3:<1.2f}%".format(round(oldYearlyCost, 2), round(newYearlyCost,2), differenceDollars, differencePercent))
 
 
-oldCost = {37.97:551, 32.06:432, 30.82:444, 34.81:532, 32.27:476, 44.41:743, 86.01:1344, 85.73:1341, 77.57:1195, 54.29:887, 31.17: 417}
+
+oldCost = {32.27:476, 44.41:743, 86.01:1344, 85.73:1341, 77.57:1195, 54.29:887, 31.17:417, 32.15:402, 32.16:363, 32.17:349, 32.18:349, 32.19:406}
+
+## Pollution FreeTM Conserve 12 Choice
 energy = EnergyCompare(oldCost)
-energy.addRule(kWhRange=range(0, 1000), costPerkWh=0.089)
-energy.addRule(kWhRange=range(1001,1499), constantCharge=0.119)
+energy.addRule(kWhRange=range(0,1000), costPerkWh=0.051453)
+energy.addRule(kWhRange=range(1001,5000), costPerkWh=0.094943)
+energy.addRule(kWhRange=range(0,5000), constantCharge=3.49)
+energy.addRule(kWhRange=range(0,5000), costPerkWh=0.034556)
 energy.calculateCost()
 energy.prettyPrint()
+
+energy1 = EnergyCompare(oldCost)
+energy1.addRule(kWhRange=range(0,5000), costPerkWh=0.057198)
+energy1.addRule(kWhRange=range(0,5000), constantCharge=3.49)
+energy1.addRule(kWhRange=range(0,5000), costPerkWh=0.034556)
+energy1.calculateCost()
+energy1.prettyPrint()
 
 
